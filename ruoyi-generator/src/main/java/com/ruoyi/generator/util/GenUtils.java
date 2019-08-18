@@ -1,9 +1,9 @@
 package com.ruoyi.generator.util;
 
+import cn.hutool.core.util.StrUtil;
 import com.ruoyi.common.config.Global;
 import com.ruoyi.common.constant.Constants;
-import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.DateUtil;
 import com.ruoyi.generator.domain.ColumnInfo;
 import com.ruoyi.generator.domain.TableInfo;
 import org.apache.velocity.VelocityContext;
@@ -51,9 +51,9 @@ public class GenUtils {
         List<ColumnInfo> columsList = new ArrayList<>();
         for (ColumnInfo column : columns) {
             // 列名转换成Java属性名
-            String attrName = StringUtils.convertToCamelCase(column.getColumnName());
+            String attrName = StrUtil.upperFirst(StrUtil.toUnderlineCase(column.getColumnName()));
             column.setAttrName(attrName);
-            column.setAttrname(StringUtils.uncapitalize(attrName));
+            column.setAttrname(StrUtil.lowerFirst(attrName));
             column.setExtra(column.getExtra());
             // 列的数据类型，转换成Java类型
             String attrType = javaTypeMap.get(column.getDataType());
@@ -83,7 +83,7 @@ public class GenUtils {
         velocityContext.put("basePackage" , getBasePackage(packageName));
         velocityContext.put("package" , packageName);
         velocityContext.put("author" , Global.getAuthor());
-        velocityContext.put("datetime" , DateUtils.getDate());
+        velocityContext.put("datetime" , DateUtil.today());
         return velocityContext;
     }
 
@@ -112,25 +112,26 @@ public class GenUtils {
      */
     public static String tableToJava(String tableName) {
         if (Constants.AUTO_REOMVE_PRE.equals(Global.getAutoRemovePre())) {
-            tableName = tableName.substring(tableName.indexOf("_") + 1);
+            tableName = tableName.substring(tableName.indexOf('_') + 1);
         }
-        if (StringUtils.isNotEmpty(Global.getTablePrefix())) {
+        if (StrUtil.isNotEmpty(Global.getTablePrefix())) {
             tableName = tableName.replace(Global.getTablePrefix(), "");
         }
-        return StringUtils.convertToCamelCase(tableName);
+        return StrUtil.upperFirst(StrUtil.toUnderlineCase(tableName));
     }
 
     /**
      * 获取文件名
      */
     public static String getFileName(String template, TableInfo table, String moduleName) {
+        String str = "/";
         // 小写类名
         String classname = table.getClassname();
         // 大写类名
         String className = table.getClassName();
         String javaPath = PROJECT_PATH;
-        String mybatisPath = MYBATIS_PATH + "/" + moduleName + "/" + className;
-        String htmlPath = TEMPLATES_PATH + "/" + moduleName + "/" + classname;
+        String mybatisPath = MYBATIS_PATH + str + moduleName + str + className;
+        String htmlPath = TEMPLATES_PATH + str + moduleName + str + classname;
 
         if (template.contains("domain.java.vm")) {
             return javaPath + "domain" + "/" + className + ".java" ;
@@ -178,14 +179,14 @@ public class GenUtils {
      * @return 模块名
      */
     public static String getModuleName(String packageName) {
-        int lastIndex = packageName.lastIndexOf(".");
+        int lastIndex = packageName.lastIndexOf('.');
         int nameLength = packageName.length();
-        return StringUtils.substring(packageName, lastIndex + 1, nameLength);
+        return StrUtil.sub(packageName, lastIndex + 1, nameLength);
     }
 
     private static String getBasePackage(String packageName) {
-        int lastIndex = packageName.lastIndexOf(".");
-        return StringUtils.substring(packageName, 0, lastIndex);
+        int lastIndex = packageName.lastIndexOf('.');
+        return StrUtil.sub(packageName, 0, lastIndex);
     }
 
     private static String getProjectPath() {
@@ -202,27 +203,30 @@ public class GenUtils {
     }
 
     static {
-        javaTypeMap.put("tinyint" , "Integer");
-        javaTypeMap.put("smallint" , "Integer");
-        javaTypeMap.put("mediumint" , "Integer");
-        javaTypeMap.put("int" , "Integer");
-        javaTypeMap.put("number", "Integer");
+        String string = "String";
+        String integer = "Integer";
+        String date = "Date";
+        javaTypeMap.put("tinyint" , integer);
+        javaTypeMap.put("smallint" , integer);
+        javaTypeMap.put("mediumint" , integer);
+        javaTypeMap.put("int" , integer);
+        javaTypeMap.put("number", integer);
         javaTypeMap.put("integer" , "integer");
         javaTypeMap.put("bigint" , "Long");
         javaTypeMap.put("float" , "Float");
         javaTypeMap.put("double" , "Double");
         javaTypeMap.put("decimal" , "BigDecimal");
         javaTypeMap.put("bit" , "Boolean");
-        javaTypeMap.put("char" , "String");
-        javaTypeMap.put("varchar" , "String");
-        javaTypeMap.put("varchar2", "String");
-        javaTypeMap.put("tinytext" , "String");
-        javaTypeMap.put("text" , "String");
-        javaTypeMap.put("mediumtext" , "String");
-        javaTypeMap.put("longtext" , "String");
-        javaTypeMap.put("time" , "Date");
-        javaTypeMap.put("date" , "Date");
-        javaTypeMap.put("datetime" , "Date");
-        javaTypeMap.put("timestamp" , "Date");
+        javaTypeMap.put("char" , string);
+        javaTypeMap.put("varchar" , string);
+        javaTypeMap.put("varchar2", string);
+        javaTypeMap.put("tinytext" , string);
+        javaTypeMap.put("text" , string);
+        javaTypeMap.put("mediumtext" , string);
+        javaTypeMap.put("longtext" , string);
+        javaTypeMap.put("time" , date);
+        javaTypeMap.put("date" , date);
+        javaTypeMap.put("datetime" , date);
+        javaTypeMap.put("timestamp" , date);
     }
 }

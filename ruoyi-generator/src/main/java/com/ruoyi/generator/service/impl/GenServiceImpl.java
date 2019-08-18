@@ -1,8 +1,8 @@
 package com.ruoyi.generator.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.ruoyi.common.config.Global;
 import com.ruoyi.common.support.CharsetKit;
-import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.generator.domain.ColumnInfo;
 import com.ruoyi.generator.domain.TableInfo;
 import com.ruoyi.generator.mapper.GenMapper;
@@ -14,8 +14,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -64,12 +62,8 @@ public class GenServiceImpl implements IGenService {
     public byte[] generatorCode(String tableName) {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ZipOutputStream zip = new ZipOutputStream(outputStream);
-        // 查询表信息
-        TableInfo table = genMapper.selectTableByName(tableName);
-        // 查询列信息
-        List<ColumnInfo> columns = genMapper.selectTableColumnsByName(tableName);
         // 生成代码
-        generatorCode(table, columns, zip);
+        generatorCode(zip, tableName);
         IOUtils.closeQuietly(zip);
         return outputStream.toByteArray();
     }
@@ -85,25 +79,28 @@ public class GenServiceImpl implements IGenService {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         ZipOutputStream zip = new ZipOutputStream(outputStream);
         for (String tableName : tableNames) {
-            // 查询表信息
-            TableInfo table = genMapper.selectTableByName(tableName);
-            // 查询列信息
-            List<ColumnInfo> columns = genMapper.selectTableColumnsByName(tableName);
             // 生成代码
-            generatorCode(table, columns, zip);
+            generatorCode(zip, tableName);
         }
         IOUtils.closeQuietly(zip);
         return outputStream.toByteArray();
     }
 
+
     /**
-     * 生成代码
+     * 根据表信息生成代码
+     * @param zip 生成后的压缩包
+     * @param tableName 表名
      */
-    private void generatorCode(TableInfo table, List<ColumnInfo> columns, ZipOutputStream zip) {
+    private void generatorCode(ZipOutputStream zip, String tableName) {
+        // 查询表信息
+        TableInfo table = genMapper.selectTableByName(tableName);
+        // 查询列信息
+        List<ColumnInfo> columns = genMapper.selectTableColumnsByName(tableName);
         // 表名转换成Java属性名
         String className = GenUtils.tableToJava(table.getTableName());
         table.setClassName(className);
-        table.setClassname(StringUtils.uncapitalize(className));
+        table.setClassname(StrUtil.lowerFirst(className));
         // 列信息
         table.setColumns(GenUtils.transColums(columns));
         // 设置主键

@@ -5,26 +5,24 @@
 $(function() {
 	// select2复选框事件绑定
 	if ($.fn.select2 !== undefined) {
+        $.fn.select2.defaults.set( "theme", "bootstrap" );
 		$("select.form-control:not(.noselect2)").each(function () {
 			$(this).select2().on("change", function () {
 				$(this).valid();
 			})
 		})
 	}
-	// checkbox 事件绑定
-	if ($(".check-box").length > 0) {
-	    $(".check-box").iCheck({
-	    	checkboxClass: 'icheckbox-blue',
-			radioClass: 'iradio-blue',
-	    })
+	
+	// iCheck单选框及复选框事件绑定
+	if ($.fn.iCheck !== undefined) {
+		$(".check-box:not(.noicheck),.radio-box:not(.noicheck)").each(function() {
+            $(this).iCheck({
+                checkboxClass: 'icheckbox-blue',
+                radioClass: 'iradio-blue',
+            })
+        })
 	}
-	// radio 事件绑定
-	if ($(".radio-box").length > 0) {
-	    $(".radio-box").iCheck({
-	    	checkboxClass: 'icheckbox-blue',
-			radioClass: 'iradio-blue',
-	    })
-	}
+	 
 	// laydate 时间控件绑定
 	if ($(".select-time").length > 0) {
 		layui.use('laydate', function() {
@@ -69,25 +67,50 @@ $(function() {
 	}
 	// laydate time-input 时间控件绑定
 	if ($(".time-input").length > 0) {
-	    layui.use('laydate', function() {
-	        var laydate = layui.laydate;
-	        var times = $(".time-input");
-	        // 控制控件外观
-	        var type = times.attr("data-type") || 'date';
-	        // 控制回显格式
-	        var format = times.attr("data-format") || 'yyyy-MM-dd';
-	        for (var i = 0; i < times.length; i++) {
-	            var time = times[i];
-	            laydate.render({
-	                elem: time,
-	                theme: 'molv',
-	                trigger: 'click',
-	                type: type,
-	                format: format,
-	                done: function(value, date) {}
-	            });
-	        }
-	    });
+		layui.use('laydate', function () {
+			var com = layui.laydate;
+			$(".time-input").each(function (index, item) {
+				var time = $(item);
+				// 控制控件外观
+				var type = time.attr("data-type") || 'date';
+				// 控制回显格式
+				var format = time.attr("data-format") || 'yyyy-MM-dd';
+				// 控制日期控件按钮
+				var buttons = time.attr("data-btn") || 'clear|now|confirm', newBtnArr = [];
+				// 日期控件选择完成后回调处理
+				var callback = time.attr("data-callback") || {};
+				if (buttons) {
+					if (buttons.indexOf("|") > 0) {
+						var btnArr = buttons.split("|"), btnLen = btnArr.length;
+						for (var j = 0; j < btnLen; j++) {
+							if ("clear" === btnArr[j] || "now" === btnArr[j] || "confirm" === btnArr[j]) {
+								newBtnArr.push(btnArr[j]);
+							}
+						}
+					} else {
+						if ("clear" === buttons || "now" === buttons || "confirm" === buttons) {
+							newBtnArr.push(buttons);
+						}
+					}
+				} else {
+					newBtnArr = ['clear', 'now', 'confirm'];
+				}
+				com.render({
+					elem: item,
+					theme: 'molv',
+					trigger: 'click',
+					type: type,
+					format: format,
+					btns: newBtnArr,
+					done: function (value, data) {
+						if (typeof window[callback] != 'undefined'
+							&& window[callback] instanceof Function) {
+							window[callback](value, data);
+						}
+					}
+				});
+			});
+		});
 	}
 	// tree 关键字搜索绑定
 	if ($("#keyword").length > 0) {
@@ -108,12 +131,18 @@ $(function() {
 		var dataExpand = $.common.isEmpty($.table._option.expandAll) ? true : $.table._option.expandAll;
 		expandFlag = $.common.isEmpty(expandFlag) ? dataExpand : expandFlag;
 	    if (!expandFlag) {
-	        $('#' + $.table._option.id).bootstrapTreeTable('expandAll');
+	    	$.bttTable.bootstrapTreeTable('expandAll');
 	    } else {
-	        $('#' + $.table._option.id).bootstrapTreeTable('collapseAll');
+	    	$.bttTable.bootstrapTreeTable('collapseAll');
 	    }
 	    expandFlag = expandFlag ? false: true;
 	})
+	// 按下ESC按钮关闭弹层
+	$('body', document).on('keyup', function(e) {
+	    if (e.which === 27) {
+	        $.modal.closeAll();
+	    }
+	});
 });
 
 /** 刷新选项卡 */
@@ -206,10 +235,12 @@ var log = {
 $.ajaxSetup({
     complete: function(XMLHttpRequest, textStatus) {
         if (textStatus == 'timeout') {
-            $.modal.alertWarning("服务器超时，请稍后再试！");
+        	$.modal.alertWarning("服务器超时，请稍后再试！");
+        	$.modal.enable();
             $.modal.closeLoading();
-        } else if (textStatus == "parsererror") {
-            $.modal.alertWarning("服务器错误，请联系管理员！");
+        } else if (textStatus == "parsererror" || textStatus == "error") {
+        	$.modal.alertWarning("服务器错误，请联系管理员！");
+        	$.modal.enable();
             $.modal.closeLoading();
         }
     }

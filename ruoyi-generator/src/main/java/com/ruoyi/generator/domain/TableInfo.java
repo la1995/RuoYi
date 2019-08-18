@@ -3,7 +3,7 @@ package com.ruoyi.generator.domain;
 import com.ruoyi.common.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.apache.commons.lang3.ObjectUtils;
+import cn.hutool.core.util.ObjectUtil;
 
 import java.util.List;
 
@@ -47,44 +47,12 @@ public class TableInfo extends BaseEntity {
      */
     private String classname;
 
-    public String getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
-    }
-
-    public String getTableComment() {
-        return tableComment;
-    }
-
-    public void setTableComment(String tableComment) {
-        this.tableComment = tableComment;
-    }
-
-    public List<ColumnInfo> getColumns() {
-        return columns;
-    }
-
     public ColumnInfo getColumnsLast() {
         ColumnInfo columnInfo = null;
-        if (ObjectUtils.allNotNull(columns) && !columns.isEmpty()) {
+        if (ObjectUtil.isNotNull(columns) && !columns.isEmpty()) {
             columnInfo = columns.get(0);
         }
         return columnInfo;
-    }
-
-    public void setColumns(List<ColumnInfo> columns) {
-        this.columns = columns;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public void setClassName(String className) {
-        this.className = className;
     }
 
     public String getClassname() {
@@ -95,11 +63,11 @@ public class TableInfo extends BaseEntity {
         this.classname = classname;
     }
 
-    public ColumnInfo getPrimaryKey() {
-        return primaryKey;
+    public String getClassName() {
+        return className;
     }
 
-    public void setPrimaryKey(ColumnInfo primaryKey) {
-        this.primaryKey = primaryKey;
+    public void setClassName(String className) {
+        this.className = className;
     }
 }

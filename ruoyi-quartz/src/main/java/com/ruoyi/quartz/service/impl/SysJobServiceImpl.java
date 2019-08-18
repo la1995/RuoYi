@@ -1,22 +1,20 @@
 package com.ruoyi.quartz.service.impl;
 
-import java.util.List;
-import javax.annotation.PostConstruct;
-
-import com.ruoyi.common.exception.job.TaskException;
-import org.quartz.CronTrigger;
-import org.quartz.ObjectAlreadyExistsException;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import cn.hutool.core.convert.Convert;
 import com.ruoyi.common.constant.ScheduleConstants;
-import com.ruoyi.common.support.Convert;
+import com.ruoyi.common.exception.job.TaskException;
 import com.ruoyi.quartz.domain.SysJob;
 import com.ruoyi.quartz.mapper.SysJobMapper;
 import com.ruoyi.quartz.service.ISysJobService;
 import com.ruoyi.quartz.util.CronUtils;
 import com.ruoyi.quartz.util.ScheduleUtils;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
+import java.util.List;
 
 import static com.ruoyi.quartz.util.ScheduleUtils.createScheduleJob;
 import static com.ruoyi.quartz.util.ScheduleUtils.updateScheduleJob;
@@ -46,18 +44,7 @@ public class SysJobServiceImpl implements ISysJobService {
     public void init() throws SchedulerException, TaskException {
         List<SysJob> jobList = jobMapper.selectJobAll();
         for (SysJob sysJob : jobList){
-            CronTrigger cronTrigger = ScheduleUtils.getCronTrigger(scheduler, sysJob.getJobId());
-            // 如果不存在，则创建
-            if (cronTrigger == null) {
-                try {
-                    createScheduleJob(scheduler, sysJob);
-                }catch (ObjectAlreadyExistsException e){
-                    updateScheduleJob(scheduler, sysJob);
-                }
-
-            } else {
-                updateScheduleJob(scheduler, sysJob);
-            }
+            ScheduleUtils.updateScheduleJob(scheduler, sysJob);
         }
     }
 

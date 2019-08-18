@@ -52,12 +52,13 @@ public class OnlineSessionFilter extends AccessControlFilter {
                 if (user != null) {
                     onlineSession.setUserId(user.getUserId());
                     onlineSession.setLoginName(user.getLoginName());
+                    onlineSession.setAvatar(user.getAvatar());
                     onlineSession.setDeptName(user.getDept().getDeptName());
                     onlineSession.markAttributeChanged();
                 }
             }
 
-            return onlineSession.getStatus() != OnlineStatus.off_line;
+            return onlineSession.getStatus() != OnlineStatus.OFF_LINE;
         }
         return true;
     }

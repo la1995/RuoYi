@@ -1,6 +1,7 @@
 package com.ruoyi.common.config;
 
-import com.ruoyi.common.utils.StringUtils;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.util.StrUtil;
 import com.ruoyi.common.utils.YamlUtil;
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,7 +59,7 @@ public class Global {
             try {
                 yamlMap = YamlUtil.loadYaml(NAME);
                 value = String.valueOf(YamlUtil.getProperty(yamlMap, key));
-                map.put(key, value != null ? value : StringUtils.EMPTY);
+                map.put(key, value != null ? value : StrUtil.EMPTY);
             } catch (Exception e) {
                 log.error("获取全局配置异常 {}" , key);
             }
@@ -70,14 +71,14 @@ public class Global {
      * 获取项目名称
      */
     public static String getName() {
-        return StringUtils.nvl(getConfig("ruoyi.name"), "RuoYi");
+        return Convert.toStr(getConfig("ruoyi.name"), "RuoYi");
     }
 
     /**
      * 获取项目版本
      */
     public static String getVersion() {
-        return StringUtils.nvl(getConfig("ruoyi.version"), "3.3.0");
+        return Convert.toStr(getConfig("ruoyi.version"), "3.4.0");
     }
 
     /**
@@ -92,7 +93,14 @@ public class Global {
      * 获取ip地址开关
      */
     public static Boolean isAddressEnabled() {
-        return Boolean.valueOf(getConfig("ruoyi.addressEnabled"));
+        return Convert.toBool(getConfig("ruoyi.addressEnabled"));
+    }
+
+    /**
+     * 是否开启演示实例
+     */
+    public static Boolean isDemoEnabled() {
+        return Convert.toBool(getConfig("ruoyi.demoEnabled"), false);
     }
 
     /**
@@ -127,27 +135,27 @@ public class Global {
      * 获取作者
      */
     public static String getAuthor() {
-        return StringUtils.nvl(getConfig("gen.author"), "ruoyi");
+        return Convert.toStr(getConfig("gen.author"), "ruoyi");
     }
 
     /**
      * 生成包路径
      */
     public static String getPackageName() {
-        return StringUtils.nvl(getConfig("gen.packageName"), "com.ruoyi.project.module");
+        return Convert.toStr(getConfig("gen.packageName"), "com.ruoyi.project.module");
     }
 
     /**
      * 是否自动去除表前缀
      */
     public static String getAutoRemovePre() {
-        return StringUtils.nvl(getConfig("gen.autoRemovePre"), "true");
+        return Convert.toStr(getConfig("gen.autoRemovePre"), "true");
     }
 
     /**
      * 表前缀(类名不会包含表前缀)
      */
     public static String getTablePrefix() {
-        return StringUtils.nvl(getConfig("gen.tablePrefix"), "sys_");
+        return Convert.toStr(getConfig("gen.tablePrefix"), "sys_");
     }
 }

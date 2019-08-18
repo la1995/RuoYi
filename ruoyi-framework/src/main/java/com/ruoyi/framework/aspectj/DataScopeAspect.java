@@ -1,7 +1,12 @@
 package com.ruoyi.framework.aspectj;
 
-import java.lang.reflect.Method;
-
+import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.ruoyi.common.annotation.DataScope;
+import com.ruoyi.common.base.BaseEntity;
+import com.ruoyi.framework.util.ShiroUtils;
+import com.ruoyi.system.domain.SysRole;
+import com.ruoyi.system.domain.SysUser;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.Aspect;
@@ -9,13 +14,8 @@ import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
-import com.ruoyi.common.annotation.DataScope;
-import com.ruoyi.common.base.BaseEntity;
-import com.ruoyi.common.utils.StringUtils;
-import com.ruoyi.framework.util.ShiroUtils;
-import com.ruoyi.system.domain.SysRole;
-import com.ruoyi.system.domain.SysUser;
-import org.springframework.util.ObjectUtils;
+
+import java.lang.reflect.Method;
 
 /**
  * 数据过滤处理
@@ -36,6 +36,16 @@ public class DataScopeAspect {
     private static final String DATA_SCOPE_CUSTOM = "2" ;
 
     /**
+     * 部门数据权限
+     */
+    private static final String DATA_SCOPE_DEPT = "3";
+
+    /**
+     * 部门及以下数据权限
+     */
+    public static final String DATA_SCOPE_DEPT_AND_CHILD = "4";
+
+    /**
      * 数据权限过滤关键字
      */
     private static final String DATA_SCOPE = "dataScope" ;
@@ -45,6 +55,7 @@ public class DataScopeAspect {
      */
     @Pointcut("@annotation(com.ruoyi.common.annotation.DataScope)")
     public void dataScopePointCut() {
+        // 配置织入点
     }
 
     @Before("dataScopePointCut()")
@@ -60,7 +71,7 @@ public class DataScopeAspect {
         }
         // 获取当前的用户
         SysUser currentUser = ShiroUtils.getSysUser();
-        if (!ObjectUtils.isEmpty(currentUser) && !currentUser.isAdmin()) {
+        if (ObjectUtil.isNotNull(currentUser) && !currentUser.isAdmin()) {
             // 如果是超级管理员，则不过滤数据
             dataScopeFilter(joinPoint, currentUser, controllerDataScope.tableAlias());
         }
@@ -78,13 +89,20 @@ public class DataScopeAspect {
                 sqlString = new StringBuilder();
                 break;
             } else if (DATA_SCOPE_CUSTOM.equals(dataScope)) {
-                sqlString.append(StringUtils.format(
-                        " OR {}.dept_id IN ( SELECT dept_id FROM sys_role_dept WHERE role_id = {} ) " , alias,
+                sqlString.append(String.format(
+                        " OR %s.dept_id IN ( SELECT dept_id FROM sys_role_dept WHERE role_id = %d ) " , alias,
                         role.getRoleId()));
+            }else if (DATA_SCOPE_DEPT.equals(dataScope)){
+                sqlString.append(String.format(" OR %s.dept_id = %d ", alias, user.getDeptId()));
+            }else if (DATA_SCOPE_DEPT_AND_CHILD.equals(dataScope)){
+                String deptChild = user.getDept().getParentId() + "," + user.getDeptId();
+                sqlString.append(String.format(
+                        " OR  %s.dept_id IN ( SELECT dept_id FROM sys_dept WHERE dept_id =  %d or ancestors LIKE '%%%s%%' )",
+                        alias, user.getDeptId(), deptChild));
             }
         }
 
-        if (StringUtils.isNotBlank(sqlString.toString())) {
+        if (StrUtil.isNotBlank(sqlString.toString())) {
             BaseEntity baseEntity = (BaseEntity) joinPoint.getArgs()[0];
             baseEntity.getParams().put(DATA_SCOPE, " AND (" + sqlString.substring(4) + ")");
         }

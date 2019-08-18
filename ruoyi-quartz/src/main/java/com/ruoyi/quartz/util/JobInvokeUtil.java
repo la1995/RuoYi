@@ -1,7 +1,7 @@
 package com.ruoyi.quartz.util;
 
+import cn.hutool.core.util.StrUtil;
 import com.ruoyi.common.utils.SpringUtils;
-import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.quartz.domain.SysJob;
 
 import java.lang.reflect.InvocationTargetException;
@@ -12,13 +12,18 @@ import java.lang.reflect.Method;
  *
  * @author ruoyi
  */
-public class JobInvokeUtil {
+class JobInvokeUtil {
+
+    private JobInvokeUtil(){
+        throw new IllegalStateException("Utility class");
+    }
     /**
      * 执行方法
      *
      * @param sysJob 系统任务
      */
-    public static void invokeMethod(SysJob sysJob) throws Exception {
+    public static void invokeMethod(SysJob sysJob) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
+            InvocationTargetException {
         Object bean = SpringUtils.getBean(sysJob.getJobName());
         String methodName = sysJob.getMethodName();
         String methodParams = sysJob.getMethodParams();
@@ -36,7 +41,7 @@ public class JobInvokeUtil {
     private static void invokeSpringBean(Object bean, String methodName, String methodParams)
             throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
-        if (StringUtils.isNotEmpty(methodParams)) {
+        if (StrUtil.isNotEmpty(methodParams)) {
             Method method = bean.getClass().getDeclaredMethod(methodName, String.class);
             method.invoke(bean, methodParams);
         } else {

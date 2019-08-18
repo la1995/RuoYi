@@ -1,16 +1,16 @@
 package com.ruoyi.framework.aspectj;
 
+import cn.hutool.core.util.StrUtil;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.enums.BusinessStatus;
 import com.ruoyi.common.json.JSON;
-import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.framework.manager.AsyncManager;
 import com.ruoyi.framework.manager.factory.AsyncFactory;
-import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.framework.util.ShiroUtils;
 import com.ruoyi.system.domain.SysOperLog;
 import com.ruoyi.system.domain.SysUser;
-import org.apache.commons.lang3.ObjectUtils;
+import cn.hutool.core.util.ObjectUtil;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -40,15 +40,16 @@ public class LogAspect {
      */
     @Pointcut("@annotation(com.ruoyi.common.annotation.Log)")
     public void logPointCut() {
+        //配置织入点
     }
 
     /**
-     * 前置通知 用于拦截操作
+     * 处理完请求后执行
      *
      * @param joinPoint 切点
      */
     @AfterReturning(pointcut = "logPointCut()")
-    public void doBefore(JoinPoint joinPoint) {
+    public void doAfterReturning(JoinPoint joinPoint) {
         handleLog(joinPoint, null);
     }
 
@@ -59,7 +60,7 @@ public class LogAspect {
      * @param e 异常
      */
     @AfterThrowing(value = "logPointCut()" , throwing = "e")
-    public void doAfter(JoinPoint joinPoint, Exception e) {
+    public void doAfterThrowing(JoinPoint joinPoint, Exception e) {
         handleLog(joinPoint, e);
     }
 
@@ -82,17 +83,17 @@ public class LogAspect {
             operLog.setOperIp(ip);
 
             operLog.setOperUrl(ServletUtils.getRequest().getRequestURI());
-            if (ObjectUtils.allNotNull(currentUser)) {
+            if (ObjectUtil.isNotNull(currentUser)) {
                 operLog.setOperName(currentUser.getLoginName());
-                if (ObjectUtils.allNotNull(currentUser.getDept())
-                        && StringUtils.isNotEmpty(currentUser.getDept().getDeptName())) {
+                if (ObjectUtil.isNotNull(currentUser.getDept())
+                        && StrUtil.isNotEmpty(currentUser.getDept().getDeptName())) {
                     operLog.setDeptName(currentUser.getDept().getDeptName());
                 }
             }
 
             if (e != null) {
                 operLog.setStatus(BusinessStatus.FAIL.ordinal());
-                operLog.setErrorMsg(StringUtils.substring(e.getMessage(), 0, 2000));
+                operLog.setErrorMsg(StrUtil.sub(e.getMessage(), 0, 2000));
             }
             // 设置方法名称
             String className = joinPoint.getTarget().getClass().getName();

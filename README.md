@@ -1,5 +1,5 @@
 [![License](https://img.shields.io/github/license/lerry903/RuoYi.svg)](https://github.com/lerry903/RuoYi/blob/master/LICENSE)
-[![SpringBoot](https://img.shields.io/badge/SpringBoot-2.1.3.RELEASE-brightgreen.svg)](https://docs.spring.io/spring-boot/docs/2.1.3.RELEASE/reference/htmlsingle/)
+[![SpringBoot](https://img.shields.io/badge/SpringBoot-2.1.5.RELEASE-brightgreen.svg)](https://docs.spring.io/spring-boot/docs/2.1.5.RELEASE/reference/htmlsingle/)
 [![GitHub Release](https://img.shields.io/github/release/lerry903/RuoYi.svg)](https://github.com/lerry903/RuoYi/releases)
 
 ## 平台简介
@@ -8,7 +8,7 @@
 
 寓意：你若不离不弃，我必生死相依
 
-> 阿里云双12活动低至2折 ：[点我购买](https://m.aliyun.com/act/team1212?params=N.aqOewixFpu)
+> 
 
 ## 内置功能
 

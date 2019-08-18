@@ -1,6 +1,9 @@
 package com.ruoyi.common.base;
 
+import cn.hutool.core.util.ObjectUtil;
+
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * 操作消息提醒
@@ -10,11 +13,11 @@ import java.util.HashMap;
 public class AjaxResult extends HashMap<String, Object> {
     private static final long serialVersionUID = 1L;
 
-    public static final String CODE_TAG = "code";
+    private static final String CODE_TAG = "code";
 
-    public static final String MSG_TAG = "msg";
+    private static final String MSG_TAG = "msg";
 
-    public static final String DATA_TAG = "data";
+    private static final String DATA_TAG = "data";
 
     /**
      * 状态类型
@@ -46,7 +49,7 @@ public class AjaxResult extends HashMap<String, Object> {
     /**
      * 状态类型
      */
-    private Type type;
+    private transient Type type;
 
     /**
      * 状态码
@@ -61,7 +64,7 @@ public class AjaxResult extends HashMap<String, Object> {
     /**
      * 数据对象
      */
-    private Object data;
+    private transient Object data;
 
 
     /**
@@ -91,7 +94,9 @@ public class AjaxResult extends HashMap<String, Object> {
     public AjaxResult(Type type, String msg, Object data) {
         super.put(CODE_TAG, type.value);
         super.put(MSG_TAG, msg);
-        super.put(DATA_TAG, data);
+        if(ObjectUtil.isNotNull(data)){
+            super.put(DATA_TAG, data);
+        }
     }
 
     /**
@@ -111,6 +116,15 @@ public class AjaxResult extends HashMap<String, Object> {
      */
     public static AjaxResult success(String msg) {
         return AjaxResult.success(msg, null);
+    }
+
+    /**
+     * 返回成功数据
+     * @param data 数据对象
+     * @return 成功消息
+     */
+    public static AjaxResult success(Object data){
+        return AjaxResult.success("操作成功", data);
     }
 
     /**
@@ -148,7 +162,7 @@ public class AjaxResult extends HashMap<String, Object> {
     /**
      * 返回错误消息
      *
-     * @return
+     * @return 默认错误信息
      */
     public static AjaxResult error() {
         return AjaxResult.error("操作失败");
@@ -173,5 +187,38 @@ public class AjaxResult extends HashMap<String, Object> {
      */
     public static AjaxResult error(String msg, Object data) {
         return new AjaxResult(Type.ERROR, msg, data);
+    }
+
+    @Override
+    public String toString() {
+        return "AjaxResult{" +
+                "type=" + type +
+                ", code=" + code +
+                ", msg='" + msg + '\'' +
+                ", data=" + data +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o){
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()){
+            return false;
+        }
+        if (!super.equals(o)){
+            return false;
+        }
+        AjaxResult that = (AjaxResult) o;
+        return code == that.code &&
+                type == that.type &&
+                Objects.equals(msg, that.msg) &&
+                Objects.equals(data, that.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), type, code, msg, data);
     }
 }

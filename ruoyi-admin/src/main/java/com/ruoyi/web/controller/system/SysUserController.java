@@ -1,19 +1,21 @@
 package com.ruoyi.web.controller.system;
 
 import com.ruoyi.common.annotation.Log;
-import com.ruoyi.common.annotation.LoginAuth;
 import com.ruoyi.common.base.AjaxResult;
+import com.ruoyi.common.constant.UserConstants;
 import com.ruoyi.common.enums.BusinessType;
+import com.ruoyi.common.page.TableDataInfo;
 import com.ruoyi.common.utils.ExcelUtil;
 import com.ruoyi.framework.shiro.service.SysPasswordService;
 import com.ruoyi.framework.util.ShiroUtils;
 import com.ruoyi.framework.web.base.BaseController;
-import com.ruoyi.common.page.TableDataInfo;
 import com.ruoyi.system.domain.SysUser;
 import com.ruoyi.system.service.ISysPostService;
 import com.ruoyi.system.service.ISysRoleService;
 import com.ruoyi.system.service.ISysUserService;
-import org.apache.commons.lang3.ObjectUtils;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiOperation;
+import cn.hutool.core.util.ObjectUtil;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -106,17 +108,19 @@ public class SysUserController extends BaseController {
         return prefix + "/add";
     }
 
-    /**
-     * 新增保存用户
-     */
+    @ApiOperation("新增用户")
+    @ApiImplicitParam(name = "user", value = "新增用户信息", dataType = "SysUser")
     @RequiresPermissions("system:user:add")
     @Log(title = "用户管理", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @Transactional(rollbackFor = Exception.class)
     @ResponseBody
     public AjaxResult addSave(SysUser user) {
-        if (ObjectUtils.allNotNull(user.getUserId()) && SysUser.isAdmin(user.getUserId())) {
+        if (ObjectUtil.isNotNull(user.getUserId()) && SysUser.isAdmin(user.getUserId())) {
             return error("不允许修改超级管理员用户");
+        }
+        if (UserConstants.USER_NAME_NOT_UNIQUE.equals(userService.checkLoginNameUnique(user.getLoginName()))){
+            return error("保存用户'" + user.getLoginName() + "'失败，账号已存在");
         }
         user.setSalt(ShiroUtils.randomSalt());
         user.setPassword(passwordService.encryptPassword(user.getLoginName(), user.getPassword(), user.getSalt()));
@@ -135,16 +139,15 @@ public class SysUserController extends BaseController {
         return prefix + "/edit";
     }
 
-    /**
-     * 修改保存用户
-     */
+    @ApiOperation("修改用户")
+    @ApiImplicitParam(name = "user", value = "修改用户信息", dataType = "SysUser")
     @RequiresPermissions("system:user:edit")
     @Log(title = "用户管理", businessType = BusinessType.UPDATE)
     @PostMapping("/edit")
     @Transactional(rollbackFor = Exception.class)
     @ResponseBody
     public AjaxResult editSave(SysUser user) {
-        if (ObjectUtils.allNotNull(user.getUserId()) && SysUser.isAdmin(user.getUserId())) {
+        if (ObjectUtil.isNotNull(user.getUserId()) && SysUser.isAdmin(user.getUserId())) {
             return error("不允许修改超级管理员用户");
         }
         user.setUpdateBy(ShiroUtils.getLoginName());
@@ -159,6 +162,8 @@ public class SysUserController extends BaseController {
         return prefix + "/resetPwd";
     }
 
+    @ApiOperation("重置密码")
+    @ApiImplicitParam(name = "user", value = "修改用户信息", dataType = "SysUser")
     @RequiresPermissions("system:user:resetPwd")
     @Log(title = "重置密码", businessType = BusinessType.UPDATE)
     @PostMapping("/resetPwd")

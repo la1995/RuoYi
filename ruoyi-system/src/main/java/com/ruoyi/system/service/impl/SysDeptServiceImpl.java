@@ -1,6 +1,7 @@
 package com.ruoyi.system.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.ruoyi.common.annotation.DataScope;
 import com.ruoyi.common.base.Ztree;
 import com.ruoyi.common.constant.UserConstants;
@@ -9,10 +10,9 @@ import com.ruoyi.system.domain.SysDept;
 import com.ruoyi.system.domain.SysRole;
 import com.ruoyi.system.mapper.SysDeptMapper;
 import com.ruoyi.system.service.ISysDeptService;
-import org.apache.commons.lang3.ObjectUtils;
+import cn.hutool.core.util.ObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,7 +66,7 @@ public class SysDeptServiceImpl implements ISysDeptService {
         Long roleId = role.getRoleId();
         List<Ztree> ztrees;
         List<SysDept> deptList = selectDeptList(new SysDept());
-        if (ObjectUtils.allNotNull(roleId)) {
+        if (ObjectUtil.isNotNull(roleId)) {
             List<String> roleDeptList = deptMapper.selectRoleDeptTree(roleId);
             ztrees = initZtree(deptList, roleDeptList);
         } else {
@@ -174,11 +174,13 @@ public class SysDeptServiceImpl implements ISysDeptService {
      */
     @Override
     public int updateDept(SysDept dept) {
-        SysDept info = deptMapper.selectDeptById(dept.getParentId());
-        if (ObjectUtils.allNotNull(info)) {
-            String ancestors = info.getAncestors() + "," + info.getDeptId();
-            dept.setAncestors(ancestors);
-            updateDeptChildren(dept, ancestors);
+        SysDept newParentDept = deptMapper.selectDeptById(dept.getParentId());
+        SysDept oldDept = selectDeptById(dept.getDeptId());
+        if (ObjectUtil.isNotNull(newParentDept) && ObjectUtil.isNotNull(oldDept)) {
+            String newAncestors = newParentDept.getAncestors() + "," + newParentDept.getDeptId();
+            String oldAncestors = oldDept.getAncestors();
+            dept.setAncestors(newAncestors);
+            updateDeptChildren(dept.getDeptId(), newAncestors, oldAncestors);
         }
         int result = deptMapper.updateDept(dept);
         if(UserConstants.DEPT_NORMAL.equals(dept.getStatus())){
@@ -202,25 +204,17 @@ public class SysDeptServiceImpl implements ISysDeptService {
     /**
      * 修改子元素关系
      *
-     * @param sysDept   部门
-     * @param ancestors 元素列表
+     * @param deptId   部门
+     * @param newAncestors 新的父ID集合
+     * @param oldAncestors 旧的父ID集合
      */
-    private void updateDeptChildren(SysDept sysDept, String ancestors) {
-        SysDept dept = new SysDept();
-        dept.setParentId(sysDept.getDeptId());
-        List<SysDept> childrens = deptMapper.selectDeptList(dept);
-        if (!CollectionUtils.isEmpty(childrens)) {
-            childrens.forEach(children -> {
-                children.setAncestors(ancestors + "," + dept.getParentId());
-                if (!UserConstants.DEPT_NORMAL.equals(sysDept.getStatus())) {
-                    children.setStatus(sysDept.getStatus());
-                }
-            });
-            deptMapper.updateDeptChildren(childrens);
-            childrens.stream().filter(children -> !UserConstants.DEPT_NORMAL.equals(children.getStatus()))
-                    .forEach(children ->
-                            updateDeptChildren(children, children.getAncestors())
-                    );
+    private void updateDeptChildren(Long deptId, String newAncestors, String oldAncestors) {
+        List<SysDept> children = deptMapper.selectChildrenDeptById(deptId);
+        for (SysDept child : children){
+            child.setAncestors(child.getAncestors().replace(oldAncestors,newAncestors));
+        }
+        if (CollectionUtil.isNotEmpty(children)){
+            deptMapper.updateDeptChildren(children);
         }
     }
 
@@ -244,7 +238,7 @@ public class SysDeptServiceImpl implements ISysDeptService {
     @Override
     public String checkDeptNameUnique(SysDept dept) {
         SysDept info = deptMapper.checkDeptNameUnique(dept.getDeptName(), dept.getParentId());
-        if (ObjectUtils.allNotNull(info) && !info.getDeptId().equals(dept.getDeptId())) {
+        if (ObjectUtil.isNotNull(info) && !info.getDeptId().equals(dept.getDeptId())) {
             return UserConstants.DEPT_NAME_NOT_UNIQUE;
         }
         return UserConstants.DEPT_NAME_UNIQUE;

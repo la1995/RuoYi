@@ -49,7 +49,7 @@
         </if>
         <!-- 数据范围过滤 -->
         ${params.dataScope}
-        order by d.order_num
+        order by d.parent_id,d.order_num
     </select>
 
     <select id="checkDeptExistUser" parameterType="Long" resultType="int">
@@ -164,4 +164,11 @@
         </set>
         where dept_id in (${ancestors})
     </update>
+
+    <select id="selectChildrenDeptById" parameterType="Long" resultMap="SysDeptResult">
+        <include refid="selectDeptVo"/>
+        <where>
+            FIND_IN_SET(#{id},ancestors)
+        </where>
+    </select>
 </mapper> 

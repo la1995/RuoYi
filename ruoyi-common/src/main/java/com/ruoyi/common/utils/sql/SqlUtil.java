@@ -1,6 +1,6 @@
 package com.ruoyi.common.utils.sql;
 
-import com.ruoyi.common.utils.StringUtils;
+import cn.hutool.core.util.StrUtil;
 
 /**
  * sql操作工具类
@@ -8,6 +8,11 @@ import com.ruoyi.common.utils.StringUtils;
  * @author ruoyi
  */
 public class SqlUtil {
+
+    private SqlUtil() {
+        throw new IllegalStateException("Utility class");
+    }
+
     /**
      * 仅支持字母、数字、下划线、空格、逗号（支持多个字段排序）
      */
@@ -16,11 +21,10 @@ public class SqlUtil {
     /**
      * 检查字符，防止注入绕过
      */
-    public static String escapeOrderBySql(String value)
-    {
-        if (StringUtils.isNotEmpty(value) && !isValidOrderBySql(value))
+    public static String escapeOrderBySql(String value){
+        if (StrUtil.isNotEmpty(value) && !isValidOrderBySql(value))
         {
-            return StringUtils.EMPTY;
+            return StrUtil.EMPTY;
         }
         return value;
     }

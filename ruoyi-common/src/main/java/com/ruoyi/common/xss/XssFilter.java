@@ -1,6 +1,6 @@
 package com.ruoyi.common.xss;
 
-import com.ruoyi.common.utils.StringUtils;
+import cn.hutool.core.util.StrUtil;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -31,11 +31,11 @@ public class XssFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
         String tempExcludes = filterConfig.getInitParameter("excludes");
         String tempEnabled = filterConfig.getInitParameter("enabled");
-        if (StringUtils.isNotEmpty(tempExcludes)) {
+        if (StrUtil.isNotEmpty(tempExcludes)) {
             String[] url = tempExcludes.split(",");
             Collections.addAll(excludes, url);
         }
-        if (StringUtils.isNotEmpty(tempEnabled)) {
+        if (StrUtil.isNotEmpty(tempEnabled)) {
             enabled = Boolean.valueOf(tempEnabled);
         }
     }
@@ -68,10 +68,5 @@ public class XssFilter implements Filter {
             }
         }
         return false;
-    }
-
-    @Override
-    public void destroy() {
-
     }
 }

@@ -5,11 +5,13 @@ ruoyi:
   # 描述
   description: 若依管理系统
   # 版本
-  version: 3.3.0
+  version: 3.4.0
   # 获取ip地址开关
   addressEnabled: true
   #演示模式
   demoMode: false
+  # 实例演示开关
+  demoEnabled: true
   # 文件上传路径
   profile: D:/profile/
 
@@ -51,7 +53,7 @@ spring:
   # 资源信息
   messages:
     # 国际化资源文件路径
-    basename: i18n/messages
+    basename: static/i18n/messages
   jackson:
     time-zone: GMT+8
     date-format: yyyy-MM-dd HH:mm:ss
@@ -65,7 +67,7 @@ spring:
     druid:
       # 主库数据源
       master:
-        url: jdbc:mysql://test:3306/ry?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true
+        url: jdbc:mysql://test:3306/ry?useUnicode=true&characterEncoding=utf8&useTimezone=true&serverTimezone=GMT%2B8&zeroDateTimeBehavior=convertToNull&useSSL=true
         username: root
         password: password
       # 从库数据源
@@ -75,6 +77,8 @@ spring:
         url:
         username:
         password:
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，'wall'用于防火墙
+      filters: config,wall,stat
       # 初始连接数
       initialSize: 5
       # 最小连接池数量
@@ -154,6 +158,10 @@ shiro:
     dbSyncPeriod: 1
     # 相隔多久检查一次session的有效性，默认就是10分钟
     validationInterval: 10
+    # 同一个用户最大会话数，比如2的意思是同一个账号允许最多同时两个人登录（默认-1不限制）
+    maxSession: -1
+    # 踢出之前登录的/之后登录的用户，默认踢出之前登录的用户
+    kickoutAfter: false
 
 # 防止XSS攻击
 xss:

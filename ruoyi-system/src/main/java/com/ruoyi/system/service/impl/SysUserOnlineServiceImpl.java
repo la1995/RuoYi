@@ -1,10 +1,10 @@
 package com.ruoyi.system.service.impl;
 
-import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.DateUtil;
 import com.ruoyi.system.domain.SysUserOnline;
 import com.ruoyi.system.mapper.SysUserOnlineMapper;
 import com.ruoyi.system.service.ISysUserOnlineService;
-import org.apache.commons.lang3.ObjectUtils;
+import cn.hutool.core.util.ObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +45,7 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService {
     @Override
     public void deleteOnlineById(String sessionId) {
         SysUserOnline userOnline = selectOnlineById(sessionId);
-        if (ObjectUtils.allNotNull(userOnline)) {
+        if (ObjectUtil.isNotNull(userOnline)) {
             userOnlineDao.deleteOnlineById(sessionId);
         }
     }
@@ -59,7 +59,7 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService {
     public void batchDeleteOnline(List<String> sessions) {
         sessions.forEach(sessionId -> {
             SysUserOnline userOnline = selectOnlineById(sessionId);
-            if (ObjectUtils.allNotNull(userOnline)) {
+            if (ObjectUtil.isNotNull(userOnline)) {
                 userOnlineDao.deleteOnlineById(sessionId);
             }
         });
@@ -102,7 +102,7 @@ public class SysUserOnlineServiceImpl implements ISysUserOnlineService {
      */
     @Override
     public List<SysUserOnline> selectOnlineByExpired(Date expiredDate) {
-        String lastAccessTime = DateUtils.parseDateToStr(DateUtils.YYYY_MM_DD_HH_MM_SS, expiredDate);
+        String lastAccessTime = DateUtil.formatDateTime(expiredDate);
         return userOnlineDao.selectOnlineByExpired(lastAccessTime);
     }
 }

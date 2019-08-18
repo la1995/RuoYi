@@ -1,17 +1,9 @@
 package com.ruoyi.framework.web.domain;
 
-import java.net.UnknownHostException;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-
-import com.ruoyi.common.utils.Arith;
+import cn.hutool.core.util.NumberUtil;
 import com.ruoyi.common.utils.IpUtils;
-import com.ruoyi.framework.web.domain.server.Cpu;
-import com.ruoyi.framework.web.domain.server.Jvm;
-import com.ruoyi.framework.web.domain.server.Mem;
-import com.ruoyi.framework.web.domain.server.Sys;
-import com.ruoyi.framework.web.domain.server.SysFile;
+import com.ruoyi.framework.web.domain.server.*;
+import lombok.Data;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.CentralProcessor.TickType;
@@ -22,11 +14,16 @@ import oshi.software.os.OSFileStore;
 import oshi.software.os.OperatingSystem;
 import oshi.util.Util;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+
 /**
  * 服务器相关信息
  *
  * @author ruoyi
  */
+@Data
 public class Server {
 
     private static final int OSHI_WAIT_SECOND = 1000;
@@ -54,49 +51,9 @@ public class Server {
     /**
      * 磁盘相关信息
      */
-    private List<SysFile> sysFiles = new LinkedList<SysFile>();
+    private List<SysFile> sysFiles = new LinkedList<>();
 
-    public Cpu getCpu() {
-        return cpu;
-    }
-
-    public void setCpu(Cpu cpu) {
-        this.cpu = cpu;
-    }
-
-    public Mem getMem() {
-        return mem;
-    }
-
-    public void setMem(Mem mem) {
-        this.mem = mem;
-    }
-
-    public Jvm getJvm() {
-        return jvm;
-    }
-
-    public void setJvm(Jvm jvm) {
-        this.jvm = jvm;
-    }
-
-    public Sys getSys() {
-        return sys;
-    }
-
-    public void setSys(Sys sys) {
-        this.sys = sys;
-    }
-
-    public List<SysFile> getSysFiles() {
-        return sysFiles;
-    }
-
-    public void setSysFiles(List<SysFile> sysFiles) {
-        this.sysFiles = sysFiles;
-    }
-
-    public void copyTo() throws Exception {
+    public void copyTo(){
         SystemInfo si = new SystemInfo();
         HardwareAbstractionLayer hal = si.getHardware();
 
@@ -160,7 +117,7 @@ public class Server {
     /**
      * 设置Java虚拟机
      */
-    private void setJvmInfo() throws UnknownHostException {
+    private void setJvmInfo(){
         Properties props = System.getProperties();
         jvm.setTotal(Runtime.getRuntime().totalMemory());
         jvm.setMax(Runtime.getRuntime().maxMemory());
@@ -186,7 +143,7 @@ public class Server {
             sysFile.setTotal(convertFileSize(total));
             sysFile.setFree(convertFileSize(free));
             sysFile.setUsed(convertFileSize(used));
-            sysFile.setUsage(Arith.mul(Arith.div(used, total, 4), 100));
+            sysFile.setUsage(NumberUtil.mul(NumberUtil.div(used, total, 4), 100));
             sysFiles.add(sysFile);
         }
     }
@@ -197,7 +154,7 @@ public class Server {
      * @param size 字节大小
      * @return 转换后值
      */
-    public String convertFileSize(long size) {
+    private String convertFileSize(long size) {
         long kb = 1024;
         long mb = kb * 1024;
         long gb = mb * 1024;
